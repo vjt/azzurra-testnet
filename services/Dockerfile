@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd -r -s /usr/sbin/nologin -d /var/lib/services services \
  && mkdir -p /opt/azzurra/services/bin /opt/azzurra/services/lang /var/lib/services \
  && chown -R services: /opt/azzurra /var/lib/services
-COPY --from=build /src/services /opt/azzurra/services/bin/services
+COPY --from=build /src/src/services /opt/azzurra/services/bin/services
 COPY --from=build /src/lang /opt/azzurra/services/lang
 COPY --from=build /src/run/data /opt/azzurra/services/data
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
