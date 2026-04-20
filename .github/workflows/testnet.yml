@@ -1,0 +1,42 @@
+name: testnet
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  up-down:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # The GitHub-hosted runner's Docker daemon does not enable IPv6 on
+      # user-defined networks by default. We patch daemon.json, then reload,
+      # so `enable_ipv6: true` on leaf6-net works without surprises.
+      - name: Enable IPv6 in Docker daemon
+        run: |
+          sudo mkdir -p /etc/docker
+          sudo tee /etc/docker/daemon.json <<'JSON'
+          {
+            "ipv6": true,
+            "fixed-cidr-v6": "fd00:cafe::/64",
+            "experimental": true,
+            "ip6tables": true
+          }
+          JSON
+          sudo systemctl restart docker
+
+      - name: Build + bring up + smoke + tear down
+        run: |
+          cp .env.example .env
+          bash scripts/smoke.sh
+        env:
+          BAHAMUT_REF: master
+          SERVICES_REF: master
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

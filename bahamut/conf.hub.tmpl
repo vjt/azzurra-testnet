@@ -1,0 +1,49 @@
+# bahamut hub conf — rendered from conf.hub.tmpl by entrypoint.sh.
+# Testnet only. Do not reuse for production.
+
+M:${SERVER_NAME}:*:${SERVER_DESC}:
+A:${SERVER_DESC}:testnet admin:root@${SERVER_NAME}:
+
+# Classes — trimmed from doc/example.conf.
+Y:1:90:0:512:150000
+Y:3:90:0:20:4000000
+Y:50:90:0:0:5000000
+Y:60:90:180:1:12000000
+Y:70:60:0:0:15000000
+
+# Client access — unrestricted for testnet.
+I:*@*::*@*::1
+
+# Oper — password is DES-crypted by entrypoint.sh via mkpasswd.
+O:*@*:${OPER_PASS_HASH}:${OPER_NICK}:OaARD:3
+
+# Client listeners.
+P:*:::${LISTEN_PORT}
+P:*::S:${LISTEN_SSL_PORT}
+
+# S2S listeners.
+# v4 — bind-address "*" resolves to all addrs (covers 0.0.0.0 + ::0 in a
+# dual-stack INET6 build; docker's svc-net + leaf4-net attachments on this
+# container bind here).
+P:*:::${LINK_PORT_V4}
+# v6 — explicit ULA bind keeps the listener on leaf6-net only.
+P:*:::${LINK_PORT_V6}
+
+# Services link (over svc-net, IPv4).
+C:services.azzurra.chat:${SERVICES_PASSWORD}:services.azzurra.chat:${LINK_PORT_V4}:50
+N:services.azzurra.chat:${SERVICES_PASSWORD}:services.azzurra.chat::50
+U:services.azzurra.chat:*:*:
+
+# Leaf-v4 link (over leaf4-net, IPv4).
+C:leaf4.azzurra.chat:${LEAF_PASSWORD}:leaf4.azzurra.chat:${LINK_PORT_V4}:50
+N:leaf4.azzurra.chat:${LEAF_PASSWORD}:leaf4.azzurra.chat::50
+
+# Leaf-v6 link (over leaf6-net, IPv6 ULA).
+C:leaf6.azzurra.chat:${LEAF_PASSWORD}:leaf6.azzurra.chat:${LINK_PORT_V6}:50
+N:leaf6.azzurra.chat:${LEAF_PASSWORD}:leaf6.azzurra.chat::50
+
+# Hub self-declaration — keeps us from accidentally acting as a leaf.
+H:*::${SERVER_NAME}
+
+# Deny root.
+K:*:Do not IRC as root:root:

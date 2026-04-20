@@ -1,0 +1,29 @@
+# bahamut leaf-v6 conf — rendered from conf.leaf6.tmpl by entrypoint.sh.
+# Autoconnects to ${HUB}:${HUB_PORT} over IPv6 ULA (leaf6-net, fd00:a22e::/64).
+
+M:${SERVER_NAME}:*:${SERVER_DESC}:
+A:${SERVER_DESC}:testnet admin:root@${SERVER_NAME}:
+
+Y:1:90:0:512:150000
+Y:3:90:0:20:4000000
+Y:50:90:0:0:5000000
+# autoconnect class
+Y:60:90:180:1:12000000
+
+I:*@*::*@*::1
+
+O:*@*:${OPER_PASS_HASH}:${OPER_NICK}:OaARD:3
+
+P:*:::${LISTEN_PORT}
+P:*::S:${LISTEN_SSL_PORT}
+
+# Outbound S2S to the hub (v6). Docker's embedded DNS will return the
+# hub's leaf6-net address (ULA) to this container, since the leaf-v6
+# container only attaches to leaf6-net. If DNS returns a v4 address by
+# mistake, override HUB to an explicit ULA literal (e.g. fd00:a22e::2).
+C:${HUB}:${LEAF_PASSWORD}:${HUB}:${HUB_PORT}:60
+N:${HUB}:${LEAF_PASSWORD}:${HUB}::60
+
+H:*::${HUB}
+
+K:*:Do not IRC as root:root:

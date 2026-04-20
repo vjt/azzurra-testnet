@@ -1,0 +1,45 @@
+# services.conf template — rendered by entrypoint.sh.
+# Keep minimal; testnet-grade.
+
+# Link to the hub (C: line must match the hub's matching C/N block).
+C:${SERVICES_NAME}:${SERVICES_PASSWORD}:${HUB}:${HUB_PORT}
+
+# Description, as shown in /links.
+D:${SERVICES_DESC}
+
+# User@host every services client presents.
+U:service:azzurra.chat
+
+# Network + master nick (owner of the net).
+A:Azzurra
+M:${SERVICES_MASTER}
+
+# Services clients.
+NS:NickServ
+CS:ChanServ
+MS:MemoServ
+HS:HelpServ
+OS:OperServ
+RS:RootServ
+ST:StatServ
+SS:SeenServ
+Global:Azzurra
+
+# Tunables — sensible testnet defaults.
+UPDATE:1200
+TIMEOUT:2
+P:5:300:5:30
+MEMOMAX:32
+MEMO_DELAY:20
+NICKEXP:40
+CHANEXP:40
+MEMOEXP:21
+STATEXP:30
+SEENEXP:30
+AKILLEXP:3600
+IGNEXP:10800
+CHAN_ACC_MAX:400
+U_ACC_MAX:5
+
+# Disable outbound mail on the testnet — no sendmail in the container.
+EMAIL:0
