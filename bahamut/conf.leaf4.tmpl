@@ -1,0 +1,27 @@
+# bahamut leaf-v4 conf — rendered from conf.leaf4.tmpl by entrypoint.sh.
+# Autoconnects to ${HUB}:${HUB_PORT} over IPv4.
+
+M:${SERVER_NAME}:*:${SERVER_DESC}:
+A:${SERVER_DESC}:testnet admin:root@${SERVER_NAME}:
+
+Y:1:90:0:512:150000
+Y:3:90:0:20:4000000
+Y:50:90:0:0:5000000
+# autoconnect class
+Y:60:90:180:1:12000000
+
+I:*@*::*@*::1
+
+O:*@*:${OPER_PASS_HASH}:${OPER_NICK}:OaARD:3
+
+P:*:::${LISTEN_PORT}
+P:*::S:${LISTEN_SSL_PORT}
+
+# Outbound S2S to the hub (v4). Class 60 -> autoconnect.
+C:${HUB}:${LEAF_PASSWORD}:${HUB}:${HUB_PORT}:60
+N:${HUB}:${LEAF_PASSWORD}:${HUB}::60
+
+# Hub declaration for services/ucasts masking.
+H:*::${HUB}
+
+K:*:Do not IRC as root:root:

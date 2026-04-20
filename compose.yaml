@@ -1,0 +1,143 @@
+name: azzurra-testnet
+
+x-bahamut-build: &bahamut-build
+  build:
+    context: ./bahamut
+    args:
+      BAHAMUT_REF: ${BAHAMUT_REF:-master}
+
+services:
+  cert-init:
+    image: alpine:3.20
+    volumes:
+      - ./certs:/certs
+    command: ["/bin/sh", "/certs/gen-cert.sh"]
+
+  hub:
+    <<: *bahamut-build
+    container_name: azzurra-hub
+    hostname: hub.azzurra.chat
+    depends_on:
+      cert-init:
+        condition: service_completed_successfully
+    environment:
+      SERVER_ROLE: hub
+      SERVER_NAME: hub.azzurra.chat
+      SERVER_DESC: "Azzurra testnet hub"
+      SERVICES_PASSWORD: ${SERVICES_PASSWORD:-testlink}
+      LEAF_PASSWORD: ${LEAF_PASSWORD:-testleaf}
+      OPER_NICK: ${OPER_NICK:-testoper}
+      OPER_PASS: ${OPER_PASS:-testoperpass}
+      LISTEN_PORT: 6667
+      LISTEN_SSL_PORT: 6697
+      LINK_PORT_V4: ${LINK_PORT_V4:-7000}
+      LINK_PORT_V6: ${LINK_PORT_V6:-7001}
+    ports:
+      - "6667:6667"
+      - "6697:6697"
+    volumes:
+      - ./certs:/etc/bahamut/certs:ro
+    networks:
+      svc-net:
+        aliases: [hub.azzurra.chat]
+      leaf4-net:
+        aliases: [hub.azzurra.chat]
+      leaf6-net:
+        aliases: [hub.azzurra.chat]
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/6667'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  leaf-v4:
+    <<: *bahamut-build
+    container_name: azzurra-leaf4
+    hostname: leaf4.azzurra.chat
+    depends_on:
+      hub:
+        condition: service_healthy
+    environment:
+      SERVER_ROLE: leaf4
+      SERVER_NAME: leaf4.azzurra.chat
+      SERVER_DESC: "Azzurra testnet leaf v4"
+      HUB: hub.azzurra.chat
+      HUB_PORT: ${LINK_PORT_V4:-7000}
+      LEAF_PASSWORD: ${LEAF_PASSWORD:-testleaf}
+      OPER_NICK: ${OPER_NICK:-testoper}
+      OPER_PASS: ${OPER_PASS:-testoperpass}
+      LISTEN_PORT: 6667
+      LISTEN_SSL_PORT: 6697
+    ports:
+      - "6668:6667"
+      - "6698:6697"
+    volumes:
+      - ./certs:/etc/bahamut/certs:ro
+    networks:
+      - leaf4-net
+
+  leaf-v6:
+    <<: *bahamut-build
+    container_name: azzurra-leaf6
+    hostname: leaf6.azzurra.chat
+    depends_on:
+      hub:
+        condition: service_healthy
+    environment:
+      SERVER_ROLE: leaf6
+      SERVER_NAME: leaf6.azzurra.chat
+      SERVER_DESC: "Azzurra testnet leaf v6"
+      HUB: hub.azzurra.chat
+      HUB_PORT: ${LINK_PORT_V6:-7001}
+      LEAF_PASSWORD: ${LEAF_PASSWORD:-testleaf}
+      OPER_NICK: ${OPER_NICK:-testoper}
+      OPER_PASS: ${OPER_PASS:-testoperpass}
+      LISTEN_PORT: 6667
+      LISTEN_SSL_PORT: 6697
+    ports:
+      - "6669:6667"
+      - "6699:6697"
+    volumes:
+      - ./certs:/etc/bahamut/certs:ro
+    networks:
+      - leaf6-net
+
+  services:
+    build:
+      context: ./services
+      args:
+        SERVICES_REF: ${SERVICES_REF:-master}
+    container_name: azzurra-services
+    hostname: services.azzurra.chat
+    depends_on:
+      hub:
+        condition: service_healthy
+    environment:
+      SERVICES_NAME: services.azzurra.chat
+      SERVICES_DESC: "Azzurra IRC Services"
+      HUB: hub.azzurra.chat
+      HUB_PORT: ${LINK_PORT_V4:-7000}
+      SERVICES_PASSWORD: ${SERVICES_PASSWORD:-testlink}
+      SERVICES_MASTER: ${OPER_NICK:-testoper}
+    volumes:
+      - services-data:/var/lib/services
+    networks:
+      - svc-net
+
+volumes:
+  services-data:
+
+networks:
+  svc-net:
+    driver: bridge
+  leaf4-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.4.0/24
+  leaf6-net:
+    enable_ipv6: true
+    driver: bridge
+    ipam:
+      config:
+        - subnet: fd00:a22e::/64
