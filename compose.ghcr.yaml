@@ -1,0 +1,27 @@
+name: azzurra-testnet
+
+# Override that swaps `build:` for `image:` — pulls prebuilt images from GHCR
+# instead of building locally. Compose with the base file:
+#
+#   BAHAMUT_TAG=master SERVICES_TAG=master \
+#     docker compose -f compose.yaml -f compose.ghcr.yaml up
+#
+# For testing an upstream PR, point BAHAMUT_TAG at the tag published by the
+# `images` workflow (e.g. bahamut-pr-2010). See README → "Testing upstream PRs".
+
+services:
+  hub:
+    build: !reset null
+    image: ghcr.io/azzurra/bahamut:${BAHAMUT_TAG:-main}
+
+  leaf-v4:
+    build: !reset null
+    image: ghcr.io/azzurra/bahamut:${BAHAMUT_TAG:-main}
+
+  leaf-v6:
+    build: !reset null
+    image: ghcr.io/azzurra/bahamut:${BAHAMUT_TAG:-main}
+
+  services:
+    build: !reset null
+    image: ghcr.io/azzurra/services:${SERVICES_TAG:-main}

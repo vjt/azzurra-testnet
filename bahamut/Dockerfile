@@ -6,7 +6,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates git file \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
-RUN git clone --depth=1 --branch="${BAHAMUT_REF}" https://github.com/azzurra/bahamut.git .
+# Support branches, tags, and arbitrary refs (incl. refs/pull/N/head + full SHAs)
+# by initialising empty repo + shallow-fetching the requested ref.
+RUN git init -q \
+ && git remote add origin https://github.com/azzurra/bahamut.git \
+ && git fetch --depth=1 origin "${BAHAMUT_REF}" \
+ && git checkout -q FETCH_HEAD
 COPY options.h_hub include/options.h
 RUN autoconf && ./configure && make
 

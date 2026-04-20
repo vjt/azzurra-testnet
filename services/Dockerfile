@@ -5,7 +5,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libc6-dev python3 ca-certificates git \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
-RUN git clone --depth=1 --branch="${SERVICES_REF}" https://github.com/azzurra/services.git .
+# Support branches, tags, and arbitrary refs (incl. refs/pull/N/head + full SHAs).
+RUN git init -q \
+ && git remote add origin https://github.com/azzurra/services.git \
+ && git fetch --depth=1 origin "${SERVICES_REF}" \
+ && git checkout -q FETCH_HEAD
 # Precompile lang files — langcomp.py regenerates svc*.clng from *.lang sources.
 RUN ./configure && cd lang && python3 langcomp.py && cd .. && make
 

@@ -59,7 +59,8 @@ Plain `docker compose down` preserves the named volume `services-data`.
 
 ```
 .
-├── compose.yaml          # top-level topology
+├── compose.yaml          # top-level topology (build from source)
+├── compose.ghcr.yaml     # override — pull images from GHCR instead
 ├── .env.example          # knobs — copy to .env
 ├── bahamut/              # one image, three roles
 │   ├── Dockerfile
@@ -77,8 +78,35 @@ Plain `docker compose down` preserves the named volume `services-data`.
 ├── scripts/
 │   └── smoke.sh          # /map, cross-leaf whois, services round-trip
 └── .github/workflows/
-    └── testnet.yml       # CI: up --wait → smoke → down -v
+    ├── testnet.yml       # CI: up --wait → smoke → down -v
+    └── images.yml        # CI: build + push bahamut/services → GHCR
 ```
+
+## Testing upstream PRs (ephemeral)
+
+Images live at `ghcr.io/azzurra/bahamut` and `ghcr.io/azzurra/services`.
+
+- `:main` and `:sha-<7>` — rebuilt on every infra `main` push.
+- `:pr-<N>-sha-<7>` — rebuilt on every infra PR.
+- Ad-hoc tags — trigger the `images` workflow manually with a git ref from the upstream bahamut / services repo:
+
+```
+gh workflow run images.yml \
+  -f ref_bahamut=refs/pull/2010/head \
+  -f ref_services=master \
+  -f tag_suffix=bahamut-pr-2010
+```
+
+Then spin up a testnet pulling the pushed image (no local build):
+
+```
+BAHAMUT_TAG=bahamut-pr-2010 \
+  docker compose -f compose.yaml -f compose.ghcr.yaml up
+```
+
+`compose.ghcr.yaml` is a drop-in override that swaps `build:` for `image: ghcr.io/azzurra/...`. `BAHAMUT_TAG` / `SERVICES_TAG` default to `main`.
+
+`bahamut/Dockerfile` and `services/Dockerfile` support branches, tags, full SHAs, and `refs/pull/N/head` via `BAHAMUT_REF` / `SERVICES_REF` when building locally.
 
 ## Non-goals
 
