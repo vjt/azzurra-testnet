@@ -31,4 +31,7 @@ EOF
 fi
 
 cd "${PREFIX}"
-exec ./bin/services
+# -F keeps services attached to stdio so docker sees the main process
+# (azzurra/services main.c otherwise fork()s and the parent exits → container
+# dies). Depends on azzurra/services#12.
+exec ./bin/services -F
