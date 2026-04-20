@@ -46,11 +46,32 @@ VARS="$VARS \$SERVICES_PASSWORD \$LEAF_PASSWORD"
 
 envsubst "${VARS}" < "${tmpl}" > /etc/bahamut/bahamut.conf
 
+# Cloak key — bahamut-azzurra needs a >=64-byte key at DPATH/ircd.cloak
+# (see include/config.h MIN_CLOAK_KEY_LEN/CKPATH). Testnet-random per boot.
+if [ ! -s /var/lib/bahamut/ircd.cloak ]; then
+    head -c 128 /dev/urandom | od -An -tx1 | tr -d ' \n' \
+        > /var/lib/bahamut/ircd.cloak
+fi
+
+# SSL — bahamut-azzurra expects ircd.crt + ircd.key in DPATH
+# (include/config.h: IRCDSSL_CPATH / IRCDSSL_KPATH). Our cert-init produces
+# one combined <role>.pem per host (cert || key); openssl's
+# use_certificate_chain_file + use_PrivateKey_file both accept combined PEM,
+# so symlink the same file to both expected names.
+case "${SERVER_ROLE}" in
+    hub)   pem=/etc/bahamut/certs/hub.pem    ;;
+    leaf4) pem=/etc/bahamut/certs/leaf4.pem  ;;
+    leaf6) pem=/etc/bahamut/certs/leaf6.pem  ;;
+esac
+if [ -s "${pem}" ]; then
+    ln -sf "${pem}" /var/lib/bahamut/ircd.crt
+    ln -sf "${pem}" /var/lib/bahamut/ircd.key
+fi
+
 # Dump the conf to stderr at startup (modulo OPER hash) for debugging.
 # Real tokens stay out of stdout anyway — this is a testnet image.
 printf '=== %s bahamut.conf ===\n' "${SERVER_ROLE}" >&2
 sed -e 's/O:\(.*\):[^:]*:\(.*\)/O:\1:<hashed>:\2/' /etc/bahamut/bahamut.conf >&2
 printf '=== end bahamut.conf ===\n' >&2
 
-cd /var/lib/bahamut
-exec /usr/local/sbin/ircd -F -f /etc/bahamut/bahamut.conf
+exec /usr/local/sbin/ircd -t -s -d /var/lib/bahamut -f /etc/bahamut/bahamut.conf

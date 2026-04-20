@@ -1,7 +1,12 @@
 # bahamut hub conf — rendered from conf.hub.tmpl by entrypoint.sh.
 # Testnet only. Do not reuse for production.
 
-M:${SERVER_NAME}:*:${SERVER_DESC}:
+# 5th field = "primary port" (ircd.c:1060/1077). Without it, bahamut falls
+# back to compile-time PORTNUM (7000) and tries to bind that; if the same
+# port appears in a P: line below, bind fails → "Couldn't bind to primary
+# port" → exit 1. Declaring it here (= v4 S2S port) makes ircd open it via
+# the M-line path and the P: line for the same port can be dropped.
+M:${SERVER_NAME}:*:${SERVER_DESC}:${LINK_PORT_V4}:
 A:${SERVER_DESC}:testnet admin:root@${SERVER_NAME}:
 
 # Classes — trimmed from doc/example.conf.
@@ -22,11 +27,8 @@ P:*:::${LISTEN_PORT}
 P:*::S:${LISTEN_SSL_PORT}
 
 # S2S listeners.
-# v4 — bind-address "*" resolves to all addrs (covers 0.0.0.0 + ::0 in a
-# dual-stack INET6 build; docker's svc-net + leaf4-net attachments on this
-# container bind here).
-P:*:::${LINK_PORT_V4}
-# v6 — explicit ULA bind keeps the listener on leaf6-net only.
+# v4 port is already opened via the M-line (primary port). Only v6 needs a
+# P: line here.
 P:*:::${LINK_PORT_V6}
 
 # Services link (over svc-net, IPv4).
