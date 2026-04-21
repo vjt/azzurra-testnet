@@ -19,8 +19,11 @@ Y:70:60:0:0:15000000
 # Client access — unrestricted for testnet.
 I:*@*::*@*::1
 
-# Oper — password is DES-crypted by entrypoint.sh via mkpasswd.
+# Opers — passwords are DES-crypted by entrypoint.sh via mkpasswd. The
+# "azzurra" line is a shared testnet convenience credential (password
+# "azzt3st") so staff can /oper without tracking the per-boot OPER_PASS.
 O:*@*:${OPER_PASS_HASH}:${OPER_NICK}:OaARD:3
+O:*@*:${AZZURRA_OPER_PASS_HASH}:azzurra:moOARD:3
 
 # Client listeners.
 P:*:::${LISTEN_PORT}

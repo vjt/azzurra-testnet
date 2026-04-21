@@ -39,9 +39,15 @@ esac
 OPER_PASS_HASH="$(mkpasswd --method=des "${OPER_PASS}")"
 export OPER_PASS_HASH
 
+# Second, shared testnet O-line (Sonic's request): fixed user "azzurra"
+# with fixed password "azzt3st" (DES-crypted at boot), so staff poking at
+# the testnet can /oper without chasing the per-boot OPER_NICK/OPER_PASS.
+AZZURRA_OPER_PASS_HASH="$(mkpasswd --method=des azzt3st)"
+export AZZURRA_OPER_PASS_HASH
+
 # Generate conf from template (limit envsubst to known vars so `$foo`
 # strings inside conf comments are left alone).
-VARS='$SERVER_NAME $SERVER_DESC $OPER_NICK $OPER_PASS_HASH'
+VARS='$SERVER_NAME $SERVER_DESC $OPER_NICK $OPER_PASS_HASH $AZZURRA_OPER_PASS_HASH'
 VARS="$VARS \$LISTEN_PORT \$LISTEN_SSL_PORT"
 VARS="$VARS \$LINK_PORT_V4 \$LINK_PORT_V6"
 VARS="$VARS \$HUB \$HUB_PORT \$HUB_IP"
