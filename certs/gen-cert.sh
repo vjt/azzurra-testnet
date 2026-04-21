@@ -23,3 +23,13 @@ for cn in hub leaf4 leaf6 services; do
     rm -f "${cn}.key"
     echo "generated ${pem}"
 done
+
+# Network-wide cloak key. Must be identical on every bahamut instance —
+# crypt_userhost.c seeds the +x host hash with the file's bytes, so
+# divergent keys mean the same user shows different cloaked hosts on
+# hub vs leaf. Generate once here, mount read-only into every bahamut
+# container, entrypoint copies into DPATH/ircd.cloak.
+if [ ! -s ircd.cloak ]; then
+    head -c 128 /dev/urandom | od -An -tx1 | tr -d ' \n' > ircd.cloak
+    echo "generated ircd.cloak"
+fi

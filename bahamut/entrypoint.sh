@@ -51,10 +51,18 @@ VARS="$VARS \$SERVICES_PASSWORD \$LEAF_PASSWORD"
 envsubst "${VARS}" < "${tmpl}" > /etc/bahamut/bahamut.conf
 
 # Cloak key — bahamut-azzurra needs a >=64-byte key at DPATH/ircd.cloak
-# (see include/config.h MIN_CLOAK_KEY_LEN/CKPATH). Testnet-random per boot.
-if [ ! -s /var/lib/bahamut/ircd.cloak ]; then
-    head -c 128 /dev/urandom | od -An -tx1 | tr -d ' \n' \
-        > /var/lib/bahamut/ircd.cloak
+# (see include/config.h MIN_CLOAK_KEY_LEN/CKPATH). MUST be identical on
+# every server on the network: crypt_userhost.c hashes (user@host, key)
+# to produce the +x cloak, so divergent keys produce different cloaked
+# hosts for the same user depending on which server sees them. cert-init
+# generates the shared key once into ./certs/ircd.cloak (mounted
+# read-only at /etc/bahamut/certs here); we copy it into DPATH so the
+# file stays under /var/lib/bahamut/ where bahamut expects it.
+if [ -s /etc/bahamut/certs/ircd.cloak ]; then
+    cp /etc/bahamut/certs/ircd.cloak /var/lib/bahamut/ircd.cloak
+elif [ ! -s /var/lib/bahamut/ircd.cloak ]; then
+    echo "ircd.cloak missing from /etc/bahamut/certs and DPATH — cert-init did not run?" >&2
+    exit 1
 fi
 
 # SSL — bahamut-azzurra expects ircd.crt + ircd.key in DPATH

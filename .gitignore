@@ -1,5 +1,6 @@
 .env
 certs/*.pem
 certs/*.key
+certs/ircd.cloak
 __pycache__/
 *.pyc
