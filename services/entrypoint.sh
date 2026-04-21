@@ -30,6 +30,14 @@ ADDLANG FR START HOLD
 EOF
 fi
 
+# crypt.key — symmetric key for hidehost (+x) encryption (crypt_userhost.c
+# opens "../crypt.key" from the data/ cwd, requires >64 bytes; absent or
+# short → fatal at startup). Generate a random 128-byte hex key on first
+# boot, throwaway / testnet only.
+if [ ! -f "${PREFIX}/crypt.key" ]; then
+    head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n' > "${PREFIX}/crypt.key"
+fi
+
 cd "${PREFIX}"
 # -F keeps services attached to stdio so docker sees the main process
 # (azzurra/services main.c otherwise fork()s and the parent exits → container

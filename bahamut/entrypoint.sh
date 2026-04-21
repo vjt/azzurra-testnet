@@ -16,6 +16,9 @@ case "${SERVER_ROLE}" in
         : "${LEAF_PASSWORD:?}"
         : "${LINK_PORT_V4:?}"
         : "${LINK_PORT_V6:?}"
+        : "${SERVICES_IP:?}"
+        : "${LEAF4_IP:?}"
+        : "${LEAF6_IP:?}"
         tmpl=/etc/bahamut/conf.hub.tmpl
         ;;
     leaf4|leaf6)
@@ -41,7 +44,8 @@ export OPER_PASS_HASH
 VARS='$SERVER_NAME $SERVER_DESC $OPER_NICK $OPER_PASS_HASH'
 VARS="$VARS \$LISTEN_PORT \$LISTEN_SSL_PORT"
 VARS="$VARS \$LINK_PORT_V4 \$LINK_PORT_V6"
-VARS="$VARS \$HUB \$HUB_PORT"
+VARS="$VARS \$HUB \$HUB_PORT \$HUB_IP"
+VARS="$VARS \$SERVICES_IP \$LEAF4_IP \$LEAF6_IP"
 VARS="$VARS \$SERVICES_PASSWORD \$LEAF_PASSWORD"
 
 envsubst "${VARS}" < "${tmpl}" > /etc/bahamut/bahamut.conf

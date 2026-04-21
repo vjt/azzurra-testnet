@@ -17,7 +17,13 @@ O:*@*:${OPER_PASS_HASH}:${OPER_NICK}:OaARD:3
 P:*:::${LISTEN_PORT}
 P:*::S:${LISTEN_SSL_PORT}
 
-# Outbound S2S to the hub (v4). Class 60 -> autoconnect.
+# Outbound S2S to the hub. leaf4-net has IPv6 disabled, so docker's
+# embedded resolver returns hub.azzurra.chat as IPv4 only — bahamut's
+# INET4 connect_server() accepts the A record and dials out fine. The
+# hub's side uses bare-IP host fields (see conf.hub.tmpl) so the
+# incoming connection matches via find_conf_ip() without rDNS, which
+# docker bridges don't satisfy.
+# Class 60 → autoconnect every connfreq seconds (180 here).
 C:${HUB}:${LEAF_PASSWORD}:${HUB}:${HUB_PORT}:60
 N:${HUB}:${LEAF_PASSWORD}:${HUB}::60
 

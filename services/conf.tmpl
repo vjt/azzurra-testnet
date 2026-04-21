@@ -1,7 +1,11 @@
 # services.conf template — rendered by entrypoint.sh.
 # Keep minimal; testnet-grade.
 
-# Link to the hub (C: line must match the hub's matching C/N block).
+# Link to the hub. Services dials out; docker forward DNS on svc-net
+# resolves hub.azzurra.chat to the hub's static IP. The hub's inbound
+# match is by source IP (find_conf_ip against the bare IP in
+# conf.hub.tmpl, post `*@` auto-prefix), not by the host field here —
+# hostname works.
 C:${SERVICES_NAME}:${SERVICES_PASSWORD}:${HUB}:${HUB_PORT}
 
 # Description, as shown in /links.
@@ -43,3 +47,8 @@ U_ACC_MAX:5
 
 # Disable outbound mail on the testnet — no sendmail in the container.
 EMAIL:0
+# FORCE_AUTH and AUTODEL both default on; conf.c:1394-1398 makes
+# !EMAIL && FORCE_AUTH and !EMAIL && AUTODEL fatal. Disable both so the
+# testnet boots without outbound mail wired up.
+FORCE_AUTH:0
+AUTODEL:0

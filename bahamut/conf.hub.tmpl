@@ -31,18 +31,28 @@ P:*::S:${LISTEN_SSL_PORT}
 # P: line here.
 P:*:::${LINK_PORT_V6}
 
-# Services link (over svc-net, IPv4).
-C:services.azzurra.chat:${SERVICES_PASSWORD}:services.azzurra.chat:${LINK_PORT_V4}:50
-N:services.azzurra.chat:${SERVICES_PASSWORD}:services.azzurra.chat::50
+# Peer links. Host field is the peer's static IP on the shared docker
+# network — bare IP, NOT `*@<ip>`. s_conf.c:1648 rejects CONF_SERVER_MASK
+# aconfs whose host contains `*` or `?` (continue → line never loads),
+# which is why the "obvious" `*@<ip>` mask silently vanishes and the hub
+# replies "NO N line" at SERVER time. A bare IP passes the reject check,
+# then s_conf.c:1653 auto-prepends `*@` before lookup_confhost resolves
+# the IP into aconf->ipnum (inet_pton branch at s_conf.c:1910). End
+# result: find_conf_ip() matches by IP without ever touching rDNS — which
+# docker's embedded DNS doesn't support anyway.
+#
+# Services link (svc-net).
+C:${SERVICES_IP}:${SERVICES_PASSWORD}:services.azzurra.chat:${LINK_PORT_V4}:50
+N:${SERVICES_IP}:${SERVICES_PASSWORD}:services.azzurra.chat::50
 U:services.azzurra.chat:*:*:
 
-# Leaf-v4 link (over leaf4-net, IPv4).
-C:leaf4.azzurra.chat:${LEAF_PASSWORD}:leaf4.azzurra.chat:${LINK_PORT_V4}:50
-N:leaf4.azzurra.chat:${LEAF_PASSWORD}:leaf4.azzurra.chat::50
+# Leaf-v4 link (leaf4-net).
+C:${LEAF4_IP}:${LEAF_PASSWORD}:leaf4.azzurra.chat:${LINK_PORT_V4}:50
+N:${LEAF4_IP}:${LEAF_PASSWORD}:leaf4.azzurra.chat::50
 
-# Leaf-v6 link (over leaf6-net, IPv6 ULA).
-C:leaf6.azzurra.chat:${LEAF_PASSWORD}:leaf6.azzurra.chat:${LINK_PORT_V6}:50
-N:leaf6.azzurra.chat:${LEAF_PASSWORD}:leaf6.azzurra.chat::50
+# Leaf-v6 link (leaf6-net, IPv4 side — bahamut is INET4-only).
+C:${LEAF6_IP}:${LEAF_PASSWORD}:leaf6.azzurra.chat:${LINK_PORT_V6}:50
+N:${LEAF6_IP}:${LEAF_PASSWORD}:leaf6.azzurra.chat::50
 
 # Hub self-declaration — keeps us from accidentally acting as a leaf.
 H:*::${SERVER_NAME}

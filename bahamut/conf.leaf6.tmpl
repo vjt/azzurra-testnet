@@ -17,12 +17,17 @@ O:*@*:${OPER_PASS_HASH}:${OPER_NICK}:OaARD:3
 P:*:::${LISTEN_PORT}
 P:*::S:${LISTEN_SSL_PORT}
 
-# Outbound S2S to the hub (v6). Docker's embedded DNS will return the
-# hub's leaf6-net address (ULA) to this container, since the leaf-v6
-# container only attaches to leaf6-net. If DNS returns a v4 address by
-# mistake, override HUB to an explicit ULA literal (e.g. fd00:a22e::2).
-C:${HUB}:${LEAF_PASSWORD}:${HUB}:${HUB_PORT}:60
-N:${HUB}:${LEAF_PASSWORD}:${HUB}::60
+# Outbound S2S to the hub. Bahamut is INET4-only here (options.h
+# #undef INET6) but leaf6-net has IPv6 enabled, so docker's resolver
+# returns the hub's ULA AAAA first and bahamut silently fails to dial.
+# Use the hub's IPv4 static directly — bare IP (NOT `*@<ip>`); the
+# parser at s_conf.c:1660 prepends `*@` and lookup_confhost stores
+# ipnum via inet_pton (s_conf.c:1910), so connect_server skips the
+# resolver entirely (s_bsd.c:2524 takes the cached-ipnum branch). The
+# C/N name field stays as the hub's hostname so name-based lookups in
+# find_conf_name still match.
+C:${HUB_IP}:${LEAF_PASSWORD}:${HUB}:${HUB_PORT}:60
+N:${HUB_IP}:${LEAF_PASSWORD}:${HUB}::60
 
 H:*::${HUB}
 
