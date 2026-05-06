@@ -44,7 +44,15 @@
 #undef SUNDBE
 #undef OS_SOLARIS
 #define CRYPT_OPER_PASSWORD
-#define THROTTLE_ENABLE
+/* THROTTLE_ENABLE intentionally disabled for the testnet — the
+ * Playwright runner opens many short-lived peer connections from a
+ * single docker bridge IP within the throttle window (default 3
+ * connects in 15s, ban 15min), which was bouncing every spec past
+ * the 2nd in a serial run as REGISTER_TIMEOUT (10s). Throttle is a
+ * production anti-abuse feature; for an isolated test daemon with
+ * no public exposure, disabling it is correct. Revisit only if a
+ * test specifically wants to exercise the throttle codepath. */
+#undef THROTTLE_ENABLE
 
 /* Now that the simple stuff is done, we have to add some ifdef's */
 
