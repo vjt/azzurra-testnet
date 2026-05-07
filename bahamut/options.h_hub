@@ -54,6 +54,66 @@
  * test specifically wants to exercise the throttle codepath. */
 #undef THROTTLE_ENABLE
 
+/* NO_CHANOPS_WHEN_SPLIT intentionally disabled for the testnet —
+ * upstream-on, this gate denies channel-operator status to the first
+ * JOINer of a fresh channel for the first
+ * MAX_SERVER_SPLIT_RECOVERY_TIME minutes (default 5) after the daemon
+ * boots OR after every link drop, even when the server IS currently
+ * S2S-linked. For a real Azzurra leaf that lives for weeks, the timer
+ * elapses unnoticed; for an integration testnet that runs for ~10s
+ * per `scripts/integration.sh` invocation, the gate is permanently
+ * active — every fresh-channel JOIN gets the "Due to a network split,
+ * you can not obtain channel operator status" notice + 0 ops, MODE
+ * +i/+k/+o on a fresh channel returns 482 ERR_CHANOPRIVSNEEDED,
+ * KICK fails, OperServ-style fixtures need to oper up to bypass.
+ * Disabling the compile-time flag is cleaner than an oper-time
+ * `/SET SPLITDELAY 0` from entrypoint.sh: the flag short-circuits the
+ * whole branch (channel.c:2329-2348), no per-leaf state to manage.
+ * Production safety preserved by the network-split-defense being a
+ * runtime SET on real Azzurra leaves; testnet trades that for
+ * deterministic e2e channel-mode operations. */
+#undef NO_CHANOPS_WHEN_SPLIT
+
+/* NO_CHANOPS_WHEN_SPLIT intentionally disabled for the testnet —
+ * upstream-on, this gate denies channel-operator status to the first
+ * JOINer of a fresh channel for the first
+ * MAX_SERVER_SPLIT_RECOVERY_TIME minutes (default 5) after the daemon
+ * boots OR after every link drop, even when the server IS currently
+ * S2S-linked. For a real Azzurra leaf that lives for weeks, the timer
+ * elapses unnoticed; for an integration testnet that runs for ~10s
+ * per `scripts/integration.sh` invocation, the gate is permanently
+ * active — every fresh-channel JOIN gets the "Due to a network split,
+ * you can not obtain channel operator status" notice + 0 ops, MODE
+ * +i/+k/+o on a fresh channel returns 482 ERR_CHANOPRIVSNEEDED,
+ * KICK fails, OperServ-style fixtures need to oper up to bypass.
+ * Disabling the compile-time flag is cleaner than an oper-time
+ * `/SET SPLITDELAY 0` from entrypoint.sh: the flag short-circuits the
+ * whole branch (channel.c:2329-2348), no per-leaf state to manage.
+ * Production safety preserved by the network-split-defense being a
+ * runtime SET on real Azzurra leaves; testnet trades that for
+ * deterministic e2e channel-mode operations. */
+#undef NO_CHANOPS_WHEN_SPLIT
+
+/* NO_CHANOPS_WHEN_SPLIT intentionally disabled for the testnet —
+ * upstream-on, this gate denies channel-operator status to the first
+ * JOINer of a fresh channel for the first
+ * MAX_SERVER_SPLIT_RECOVERY_TIME minutes (default 5) after the daemon
+ * boots OR after every link drop, even when the server IS currently
+ * S2S-linked. For a real Azzurra leaf that lives for weeks, the timer
+ * elapses unnoticed; for an integration testnet that runs for ~10s
+ * per `scripts/integration.sh` invocation, the gate is permanently
+ * active — every fresh-channel JOIN gets the "Due to a network split,
+ * you can not obtain channel operator status" notice + 0 ops, MODE
+ * +i/+k/+o on a fresh channel returns 482 ERR_CHANOPRIVSNEEDED,
+ * KICK fails, OperServ-style fixtures need to oper up to bypass.
+ * Disabling the compile-time flag is cleaner than an oper-time
+ * `/SET SPLITDELAY 0` from entrypoint.sh: the flag short-circuits the
+ * whole branch (channel.c:2329-2348), no per-leaf state to manage.
+ * Production safety preserved by the network-split-defense being a
+ * runtime SET on real Azzurra leaves; testnet trades that for
+ * deterministic e2e channel-mode operations. */
+#undef NO_CHANOPS_WHEN_SPLIT
+
 /* Now that the simple stuff is done, we have to add some ifdef's */
 
 #ifdef WINGATE_NOTICE
