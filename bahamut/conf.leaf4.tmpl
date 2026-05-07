@@ -7,8 +7,13 @@ A:${SERVER_DESC}:testnet admin:root@${SERVER_NAME}:
 Y:1:90:0:512:150000
 Y:3:90:0:20:4000000
 Y:50:90:0:0:5000000
-# autoconnect class
-Y:60:90:180:1:12000000
+# Autoconnect class. connfreq=2s (vs upstream Azzurra's 180s) so the
+# integration testnet recovers in seconds when the hub boots a moment
+# before the leaf — without this the leaf retries every three minutes,
+# which keeps it permanently in split-mode for the duration of a normal
+# `scripts/integration.sh` run (no auto-op on JOIN, MODE rejected with
+# 482 across the board, all six CP15-B6 e2e specs blocked).
+Y:60:90:2:1:12000000
 
 I:*@*::*@*::1
 
