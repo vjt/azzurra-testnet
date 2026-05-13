@@ -36,4 +36,17 @@ N:${HUB}:${LEAF_PASSWORD}:${HUB}::60
 # Hub declaration for services/ucasts masking.
 H:*::${HUB}
 
+# U-line for services. Without this, m_svsmode (m_services.c:493
+# `if (!IsULine(sptr) || (parc < 3)) return 0;`) silently drops every
+# SVSMODE arriving from services via the hub S2S link — services
+# applies +r/+x/etc to its in-memory user struct, sends SVSMODE, but
+# the leaf treats services as a regular peer server and refuses the
+# privileged command. End-user symptom: NickServ IDENTIFY succeeds
+# ("Password accepted, you are now identified") but the +r umode
+# never lands on locally-connected users → /whois returns no
+# RPL_WHOISREGNICK (307), no IsRegNick gate satisfaction. The hub
+# already U-lines services (conf.hub.tmpl) but FLAGS_ULINE is local
+# to each ircd's conf — every leaf needs its own U: line.
+U:services.azzurra.chat:*:*:
+
 K:*:Do not IRC as root:root:

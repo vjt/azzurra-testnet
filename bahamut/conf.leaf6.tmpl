@@ -32,4 +32,11 @@ N:${HUB_IP}:${LEAF_PASSWORD}:${HUB}::60
 
 H:*::${HUB}
 
+# U-line for services. See conf.leaf4.tmpl for the full why; in short:
+# every leaf needs its own U: line because FLAGS_ULINE is set per-ircd
+# from local conf, and m_svsmode rejects (silently) any SVSMODE that
+# arrives from a non-U-lined source — so NickServ +r never lands on
+# locally-connected users without this line.
+U:services.azzurra.chat:*:*:
+
 K:*:Do not IRC as root:root:
