@@ -23,11 +23,17 @@ set -eu
 : "${SVC_RETURN:=noreply@azzurra.chat}"
 : "${SVC_FORCE_AUTH:=0}"
 : "${SVC_AUTODEL:=0}"
-export SVC_EMAIL SVC_SENDMAIL SVC_RETURN SVC_FORCE_AUTH SVC_AUTODEL
+# GH #349 — clone-akill threshold (conf.c CLONES → CONF_AKILL_CLONES).
+# Default 5 mirrors azzurra/services' built-in; the grappa e2e sets 0 to
+# disable clone-AUTOKILL because grappa (a bouncer) opens every session
+# from one container IP and would be false-positive akilled on the 5th.
+# See conf.tmpl for the full why. Valid values: 0 (off) or 5..50.
+: "${SVC_AKILL_CLONES:=5}"
+export SVC_EMAIL SVC_SENDMAIL SVC_RETURN SVC_FORCE_AUTH SVC_AUTODEL SVC_AKILL_CLONES
 
 PREFIX=/opt/azzurra/services
 
-envsubst '$SERVICES_NAME $SERVICES_DESC $HUB $HUB_PORT $SERVICES_PASSWORD $SERVICES_MASTER $SVC_EMAIL $SVC_SENDMAIL $SVC_RETURN $SVC_FORCE_AUTH $SVC_AUTODEL' \
+envsubst '$SERVICES_NAME $SERVICES_DESC $HUB $HUB_PORT $SERVICES_PASSWORD $SERVICES_MASTER $SVC_EMAIL $SVC_SENDMAIL $SVC_RETURN $SVC_FORCE_AUTH $SVC_AUTODEL $SVC_AKILL_CLONES' \
     < "${PREFIX}/services.conf.tmpl" > "${PREFIX}/services.conf"
 
 # lang.conf is not shipped in the repo — doc/lang.conf.example is the
