@@ -45,10 +45,18 @@ IGNEXP:10800
 CHAN_ACC_MAX:400
 U_ACC_MAX:5
 
-# Disable outbound mail on the testnet — no sendmail in the container.
-EMAIL:0
-# FORCE_AUTH and AUTODEL both default on; conf.c:1394-1398 makes
-# !EMAIL && FORCE_AUTH and !EMAIL && AUTODEL fatal. Disable both so the
-# testnet boots without outbound mail wired up.
-FORCE_AUTH:0
-AUTODEL:0
+# Outbound AUTH mail — env-gated (GH #349). Defaults (SVC_EMAIL=0) keep
+# the historic "no sendmail in the container" behavior; the grappa e2e
+# compose sets SVC_EMAIL=1 + SVC_FORCE_AUTH=1 to exercise the real
+# register→emailed-AUTH-code→+r flow against a mailpit sink. services
+# shells out via system("<SENDMAIL> -f <RETURN> -t < authnick.txt")
+# (nickserv.c do_register); the runtime image ships msmtp as
+# /usr/sbin/sendmail relaying to mailpit (see msmtprc). conf.c fatals on
+# (!EMAIL && FORCE_AUTH) and (!EMAIL && AUTODEL), so the SVC_* defaults
+# keep all three coherent when email is off. SENDMAIL/RETURN are inert
+# when EMAIL is off (parsed but never used).
+EMAIL:${SVC_EMAIL}
+SENDMAIL:${SVC_SENDMAIL}
+RETURN:${SVC_RETURN}
+FORCE_AUTH:${SVC_FORCE_AUTH}
+AUTODEL:${SVC_AUTODEL}

@@ -13,9 +13,21 @@ set -eu
 : "${SERVICES_PASSWORD:?}"
 : "${SERVICES_MASTER:?}"
 
+# GH #349 — outbound AUTH-mail knobs, env-gated with defaults that keep
+# the standalone testnet's no-email behavior (EMAIL off ⇒ FORCE_AUTH +
+# AUTODEL off too, or conf.c fatals). The grappa e2e compose sets
+# SVC_EMAIL=1 + SVC_FORCE_AUTH=1 to exercise the real register→AUTH→+r
+# flow against mailpit. Exported so envsubst (a child) sees the defaults.
+: "${SVC_EMAIL:=0}"
+: "${SVC_SENDMAIL:=/usr/sbin/sendmail}"
+: "${SVC_RETURN:=noreply@azzurra.chat}"
+: "${SVC_FORCE_AUTH:=0}"
+: "${SVC_AUTODEL:=0}"
+export SVC_EMAIL SVC_SENDMAIL SVC_RETURN SVC_FORCE_AUTH SVC_AUTODEL
+
 PREFIX=/opt/azzurra/services
 
-envsubst '$SERVICES_NAME $SERVICES_DESC $HUB $HUB_PORT $SERVICES_PASSWORD $SERVICES_MASTER' \
+envsubst '$SERVICES_NAME $SERVICES_DESC $HUB $HUB_PORT $SERVICES_PASSWORD $SERVICES_MASTER $SVC_EMAIL $SVC_SENDMAIL $SVC_RETURN $SVC_FORCE_AUTH $SVC_AUTODEL' \
     < "${PREFIX}/services.conf.tmpl" > "${PREFIX}/services.conf"
 
 # lang.conf is not shipped in the repo — doc/lang.conf.example is the
